@@ -126,7 +126,12 @@ button{cursor:pointer}
 @media(max-width:1050px){.metrics{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.recommendations{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.login{grid-template-columns:1fr}.login-art{min-height:290px;padding:28px}.art-copy h1{font-size:42px}.art-bottom{display:none}.sidebar{width:62px;padding:18px 8px}.sidebar .brand{font-size:0;padding:0 9px 30px}.sidebar .brand:first-letter{font-size:22px}.nav-label,.nav a:not(.active) span{display:none}.nav a{padding:12px 10px;justify-content:center}.main{margin-left:62px;width:calc(100% - 62px);padding:19px 13px 40px}.topbar h1{font-size:24px}.top-actions .pill{display:none}.metrics{gap:9px}.card{padding:14px}.metric-value{font-size:24px}.recommendations{grid-template-columns:1fr}.section-head{align-items:start;flex-direction:column}.weather-tools{width:100%}.weather-tools input{flex:1;min-width:0}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="/chart.umd.min.js"></script>
+<script>
+  if (typeof Chart === 'undefined') {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"><\/script>');
+  }
+</script>
 </head>
 <body>
 
@@ -502,6 +507,7 @@ async function checkSession() {
 function showApp() {
   $('login').classList.add('hidden');
   $('app').classList.remove('hidden');
+  setTimeout(() => initChart(), 50); // Initialize real-time chart canvas immediately
   loadWeather();
   pollTelemetry();
   if (!telemetryTimer) {
@@ -663,6 +669,9 @@ async function pollTelemetry() {
     if (data.auto_mode != null && data.auto_mode !== currentAutoMode) {
       updateModeUI(data.auto_mode);
     }
+
+    // Push live telemetry data point to real-time analytics graph
+    pushSensorPoint(data);
 
   } catch (err) {
     console.warn('Telemetry error:', err.message);
@@ -992,127 +1001,176 @@ let sensorChart = null;
 let chartInitialized = false;
 
 function initChart() {
-  if (chartInitialized) return;
-  chartInitialized = true;
+  if (chartInitialized && sensorChart) return;
 
   const ctx = document.getElementById('sensorChart');
   if (!ctx) return;
 
-  sensorChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [
-        {
-          label: 'Temperature (°C)',
-          data: [], borderColor: '#ef4444', backgroundColor: '#ef444420',
-          tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false, yAxisID: 'y'
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js library is loading, retrying in 200ms...');
+    setTimeout(initChart, 200);
+    return;
+  }
+
+  try {
+    sensorChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: 'Temperature (°C)',
+            data: [], borderColor: '#ef4444', backgroundColor: '#ef444420',
+            tension: 0.35, pointRadius: 2, borderWidth: 2, fill: false, yAxisID: 'y'
+          },
+          {
+            label: 'Humidity (%)',
+            data: [], borderColor: '#3b82f6', backgroundColor: '#3b82f620',
+            tension: 0.35, pointRadius: 2, borderWidth: 2, fill: false, yAxisID: 'y'
+          },
+          {
+            label: 'Soil Moisture (%)',
+            data: [], borderColor: '#22c55e', backgroundColor: '#22c55e20',
+            tension: 0.35, pointRadius: 2, borderWidth: 2, fill: false, yAxisID: 'y'
+          },
+          {
+            label: 'Rain Level (ADC÷40)',
+            data: [], borderColor: '#f59e0b', backgroundColor: '#f59e0b20',
+            tension: 0.35, pointRadius: 2, borderWidth: 2, fill: false, yAxisID: 'y'
+          },
+          {
+            label: 'Flame (0=Safe/100=Fire)',
+            data: [], borderColor: '#8b5cf6', backgroundColor: '#8b5cf620',
+            tension: 0.1, pointRadius: 2, borderWidth: 2.5, stepped: true, fill: false, yAxisID: 'y'
+          },
+          {
+            label: 'Pump ON/OFF (0/100)',
+            data: [], borderColor: '#0ea5e9', backgroundColor: '#0ea5e920',
+            tension: 0.1, pointRadius: 2, borderWidth: 2, stepped: true, fill: false, yAxisID: 'y'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(10,20,15,0.92)',
+            titleFont: { size: 11 },
+            bodyFont: { size: 11 },
+            padding: 10,
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? Number(ctx.parsed.y).toFixed(1) : '—'}`
+            }
+          }
         },
-        {
-          label: 'Humidity (%)',
-          data: [], borderColor: '#3b82f6', backgroundColor: '#3b82f620',
-          tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false, yAxisID: 'y'
-        },
-        {
-          label: 'Soil Moisture (%)',
-          data: [], borderColor: '#22c55e', backgroundColor: '#22c55e20',
-          tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false, yAxisID: 'y'
-        },
-        {
-          label: 'Rain Level (ADC÷40)',
-          data: [], borderColor: '#f59e0b', backgroundColor: '#f59e0b20',
-          tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false, yAxisID: 'y'
-        },
-        {
-          label: 'Flame (0=Safe/100=Fire)',
-          data: [], borderColor: '#8b5cf6', backgroundColor: '#8b5cf620',
-          tension: 0.3, pointRadius: 2, borderWidth: 2.5, stepped: true, fill: false, yAxisID: 'y'
-        },
-        {
-          label: 'Pump ON/OFF (0/100)',
-          data: [], borderColor: '#0ea5e9', backgroundColor: '#0ea5e920',
-          tension: 0.1, pointRadius: 0, borderWidth: 2, stepped: true, fill: false, yAxisID: 'y'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      animation: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(10,20,15,0.92)',
-          titleFont: { size: 11 },
-          bodyFont: { size: 11 },
-          padding: 10,
-          callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? Number(ctx.parsed.y).toFixed(1) : '—'}`
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 8, maxRotation: 0, font: { size: 10 }, color: '#7a8c82' },
+            grid: { color: '#e8ede9' }
+          },
+          y: {
+            min: 0, max: 110,
+            ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#7a8c82' },
+            grid: { color: '#e8ede9' },
+            title: { display: true, text: 'Sensor Value (normalized 0–100 scale)', font: { size: 10 }, color: '#7a8c82' }
           }
         }
-      },
-      scales: {
-        x: {
-          ticks: { maxTicksLimit: 8, maxRotation: 0, font: { size: 10 }, color: '#7a8c82' },
-          grid: { color: '#e8ede9' }
-        },
-        y: {
-          min: 0, max: 110,
-          ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#7a8c82' },
-          grid: { color: '#e8ede9' },
-          title: { display: true, text: 'Sensor Value (normalized 0–100 scale)', font: { size: 10 }, color: '#7a8c82' }
-        }
       }
-    }
-  });
-
-  // Wire toggle checkboxes
-  document.querySelectorAll('.legend-toggle input[data-ds]').forEach(cb => {
-    cb.addEventListener('change', () => {
-      const idx = parseInt(cb.dataset.ds);
-      sensorChart.data.datasets[idx].hidden = !cb.checked;
-      sensorChart.update('none');
     });
-  });
 
-  // Clear data button
-  const clearBtn = document.getElementById('clearGraphBtn');
-  if (clearBtn) clearBtn.onclick = () => {
-    sensorHistory.length = 0;
-    updateChart();
-  };
+    chartInitialized = true;
 
-  // Export CSV
-  const csvBtn = document.getElementById('downloadCsvBtn');
-  if (csvBtn) csvBtn.onclick = () => {
-    if (!sensorHistory.length) return alert('No data recorded yet. Wait for live sensor updates.');
-    const header = 'Time,Temperature_C,Humidity_pct,Soil_Moisture_pct,Rain_ADC,Flame_Detected,Pump_ON\n';
-    const rows = sensorHistory.map(r =>
-      `${new Date(r.ts).toISOString()},${r.temp},${r.hum},${r.soil},${r.rain},${r.fire ? 1 : 0},${r.pump ? 1 : 0}`
-    ).join('\n');
-    const blob = new Blob([header + rows], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `fieldsense_data_${Date.now()}.csv`;
-    a.click();
-  };
+    // Wire toggle checkboxes
+    document.querySelectorAll('.legend-toggle input[data-ds]').forEach(cb => {
+      cb.onchange = () => {
+        const idx = parseInt(cb.dataset.ds);
+        if (sensorChart && sensorChart.data.datasets[idx]) {
+          sensorChart.data.datasets[idx].hidden = !cb.checked;
+          sensorChart.update('none');
+        }
+      };
+    });
 
-  // Range selector
-  const rangeEl = document.getElementById('graphRange');
-  if (rangeEl) rangeEl.addEventListener('change', () => updateChart());
+    // Clear data button
+    const clearBtn = document.getElementById('clearGraphBtn');
+    if (clearBtn) {
+      clearBtn.onclick = () => {
+        sensorHistory.length = 0;
+        updateChart();
+        const stat = document.getElementById('graphStatus');
+        if (stat) {
+          const orig = stat.innerHTML;
+          stat.innerHTML = '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#eab308;margin-right:5px;vertical-align:middle"></span>Data cleared';
+          setTimeout(() => { if (stat) stat.innerHTML = orig; }, 1500);
+        }
+      };
+    }
+
+    // Export CSV button
+    const csvBtn = document.getElementById('downloadCsvBtn');
+    if (csvBtn) {
+      csvBtn.onclick = () => {
+        if (!sensorHistory.length) {
+          alert('No live data recorded yet. Wait a few seconds for sensor transmissions.');
+          return;
+        }
+        const header = 'Timestamp_MS,DateTime_Local,Temperature_C,Humidity_pct,Soil_Moisture_pct,Rain_ADC,Flame_Detected,Pump_Active\r\n';
+        const rows = sensorHistory.map(r =>
+          `${r.ts},"${new Date(r.ts).toLocaleString()}",${r.temp},${r.hum},${r.soil},${r.rain},${r.fire ? 1 : 0},${r.pump ? 1 : 0}`
+        ).join('\r\n');
+        const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.setAttribute('download', `fieldsense_telemetry_${Date.now()}.csv`);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+    }
+
+    // Range selector
+    const rangeEl = document.getElementById('graphRange');
+    if (rangeEl) rangeEl.onchange = () => updateChart();
+
+  } catch (err) {
+    console.error('Error initializing chart:', err);
+  }
 }
 
 function pushSensorPoint(data) {
   if (!data || data.temperature_c == null) return;
+
+  const now = Date.now();
+  // Prevent duplicate points if polling faster than device transmission
+  if (sensorHistory.length > 0) {
+    const last = sensorHistory[sensorHistory.length - 1];
+    if (now - last.ts < 700 && 
+        last.temp === data.temperature_c && 
+        last.hum === data.humidity_pct && 
+        last.soil === data.soil_moisture_pct &&
+        last.rain === data.rain_raw &&
+        last.fire === data.fire_detected &&
+        last.pump === data.pump_on) {
+      return;
+    }
+  }
+
   sensorHistory.push({
-    ts: Date.now(),
-    temp: data.temperature_c,
-    hum: data.humidity_pct,
-    soil: data.soil_moisture_pct,
-    rain: data.rain_raw,
-    fire: data.fire_detected,
-    pump: data.pump_on
+    ts: now,
+    temp: Number(Number(data.temperature_c).toFixed(1)),
+    hum: Number(Number(data.humidity_pct).toFixed(1)),
+    soil: Number(Number(data.soil_moisture_pct).toFixed(1)),
+    rain: data.rain_raw ?? 0,
+    fire: !!data.fire_detected,
+    pump: !!data.pump_on
   });
+
   if (sensorHistory.length > MAX_HISTORY) sensorHistory.shift();
   if (!chartInitialized) initChart();
   updateChart();
@@ -1130,7 +1188,7 @@ function updateChart() {
   sensorChart.data.datasets[0].data = slice.map(r => r.temp);
   sensorChart.data.datasets[1].data = slice.map(r => r.hum);
   sensorChart.data.datasets[2].data = slice.map(r => r.soil);
-  sensorChart.data.datasets[3].data = slice.map(r => (r.rain / 40).toFixed(1));
+  sensorChart.data.datasets[3].data = slice.map(r => Number((r.rain / 40).toFixed(1)));
   sensorChart.data.datasets[4].data = slice.map(r => r.fire ? 100 : 0);
   sensorChart.data.datasets[5].data = slice.map(r => r.pump ? 100 : 0);
   sensorChart.update('none');
@@ -1141,20 +1199,36 @@ function updateChart() {
   const avgT = $('gStatTemp');
   const avgS = $('gStatSoil');
   if (pts) pts.textContent = `Points: ${sensorHistory.length}`;
-  if (dur && sensorHistory.length > 1) {
-    const totalSec = Math.round((sensorHistory[sensorHistory.length-1].ts - sensorHistory[0].ts) / 1000);
-    dur.textContent = `Duration: ${totalSec >= 60 ? Math.floor(totalSec/60)+'m '+totalSec%60+'s' : totalSec+'s'}`;
+  if (dur) {
+    if (sensorHistory.length > 1) {
+      const totalSec = Math.round((sensorHistory[sensorHistory.length - 1].ts - sensorHistory[0].ts) / 1000);
+      dur.textContent = `Duration: ${totalSec >= 60 ? Math.floor(totalSec / 60) + 'm ' + (totalSec % 60) + 's' : totalSec + 's'}`;
+    } else {
+      dur.textContent = 'Duration: 0s';
+    }
   }
-  if (avgT && slice.length) {
-    const mean = v => (v.reduce((a,b) => a+b, 0) / v.length).toFixed(1);
-    avgT.textContent = `Avg Temp: ${mean(slice.map(r => r.temp))}°C`;
-    if (avgS) avgS.textContent = `Avg Soil: ${mean(slice.map(r => r.soil))}%`;
+  if (avgT) {
+    if (slice.length > 0) {
+      const mean = (slice.reduce((a, b) => a + b.temp, 0) / slice.length).toFixed(1);
+      avgT.textContent = `Avg Temp: ${mean}°C`;
+    } else {
+      avgT.textContent = 'Avg Temp: —';
+    }
+  }
+  if (avgS) {
+    if (slice.length > 0) {
+      const mean = (slice.reduce((a, b) => a + b.soil, 0) / slice.length).toFixed(1);
+      avgS.textContent = `Avg Soil: ${mean}%`;
+    } else {
+      avgS.textContent = 'Avg Soil: —';
+    }
   }
 }
 // ===== END SENSOR ANALYTICS GRAPH =====
 
 // Initialize check
 checkSession();
+initChart();
 </script>
 </body>
 </html>
