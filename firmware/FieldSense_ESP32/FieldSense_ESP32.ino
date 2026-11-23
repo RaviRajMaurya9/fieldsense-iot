@@ -187,7 +187,7 @@ bool sendTelemetry(float temp, float humidity, int soilRaw, int soilPct,
 
   http.addHeader("Content-Type", "application/json");
   http.addHeader("X-Device-Token", DEVICE_TOKEN);
-  http.setTimeout(1200); // 1.2s snappy timeout
+  http.setTimeout(3500); // 3.5s timeout for reliable cloud requests
   http.setReuse(true);
 
   StaticJsonDocument<384> doc;
