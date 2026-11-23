@@ -422,45 +422,58 @@ button{cursor:pointer}
       </div>
     </section>
 
-    <!-- SENSOR ANALYTICS GRAPH -->
-    <section class="section" id="analytics">
-      <div class="section-head">
-        <div>
-          <h2>&#x1F4C8; Sensor Analytics</h2>
-          <p>Live rolling history of all sensor readings &#x2014; updated every second</p>
+    <!-- COMPACT SHORT REAL-TIME SENSOR GRAPH -->
+    <section class="section" id="analytics" style="margin:20px 0;">
+      <div class="card" style="padding:14px 16px;">
+        <!-- Compact Header & Controls Bar -->
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <h3 style="font-size:15px;letter-spacing:-.03em;margin:0;display:flex;align-items:center;gap:6px;">
+              <span>📈</span> Live Sensor Timeline
+            </h3>
+            <span id="graphStatus" style="font-size:11px;color:var(--muted);font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+              <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse 1.5s infinite"></span>Live stream
+            </span>
+          </div>
+
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <select id="graphRange" style="border:1px solid var(--line);border-radius:7px;padding:3px 7px;font-size:11px;background:white;color:var(--ink);cursor:pointer">
+              <option value="60">1 Min</option>
+              <option value="300" selected>5 Min</option>
+              <option value="600">10 Min</option>
+              <option value="1800">30 Min</option>
+            </select>
+            <button class="small-btn" id="clearGraphBtn" style="padding:3px 8px;font-size:11px;">🗑 Clear</button>
+            <button class="small-btn" id="downloadCsvBtn" style="padding:3px 9px;font-size:11px;background:var(--green);color:white;border-color:var(--green);">⬇ Export CSV</button>
+          </div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <select id="graphRange" style="border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:12px;background:white;color:var(--ink)">
-            <option value="60">Last 1 min</option>
-            <option value="300" selected>Last 5 min</option>
-            <option value="600">Last 10 min</option>
-            <option value="1800">Last 30 min</option>
-          </select>
-          <button class="small-btn" id="clearGraphBtn">&#x1F5D1; Clear Data</button>
-          <button class="small-btn" id="downloadCsvBtn">&#x2B07; Export CSV</button>
+
+        <!-- Inline Sensor Toggles Toolbar -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;padding:5px 8px;background:#f7f9f5;border-radius:8px;border:1px solid var(--line);">
+          <span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-right:2px;">Sensors:</span>
+          <label class="legend-toggle" style="padding:2px 5px;font-size:10px;"><input type="checkbox" data-ds="0" checked><span style="background:#ef4444;width:8px;height:8px;"></span> Temp (°C)</label>
+          <label class="legend-toggle" style="padding:2px 5px;font-size:10px;"><input type="checkbox" data-ds="1" checked><span style="background:#3b82f6;width:8px;height:8px;"></span> Humidity (%)</label>
+          <label class="legend-toggle" style="padding:2px 5px;font-size:10px;"><input type="checkbox" data-ds="2" checked><span style="background:#22c55e;width:8px;height:8px;"></span> Soil (%)</label>
+          <label class="legend-toggle" style="padding:2px 5px;font-size:10px;"><input type="checkbox" data-ds="3" checked><span style="background:#f59e0b;width:8px;height:8px;"></span> Rain (ADC÷40)</label>
+          <label class="legend-toggle" style="padding:2px 5px;font-size:10px;"><input type="checkbox" data-ds="4" checked><span style="background:#8b5cf6;width:8px;height:8px;"></span> Flame</label>
+          <label class="legend-toggle" style="padding:2px 5px;font-size:10px;"><input type="checkbox" data-ds="5" checked><span style="background:#0ea5e9;width:8px;height:8px;"></span> Pump</label>
         </div>
-      </div>
-      <div class="card" style="margin-bottom:12px;padding:12px 16px;">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Toggle Sensors:</span>
-          <label class="legend-toggle"><input type="checkbox" data-ds="0" checked><span style="background:#ef4444"></span> Temperature (&#x00B0;C)</label>
-          <label class="legend-toggle"><input type="checkbox" data-ds="1" checked><span style="background:#3b82f6"></span> Humidity (%)</label>
-          <label class="legend-toggle"><input type="checkbox" data-ds="2" checked><span style="background:#22c55e"></span> Soil Moisture (%)</label>
-          <label class="legend-toggle"><input type="checkbox" data-ds="3" checked><span style="background:#f59e0b"></span> Rain Level (ADC&#xF7;40)</label>
-          <label class="legend-toggle"><input type="checkbox" data-ds="4" checked><span style="background:#8b5cf6"></span> Flame (0=Safe/100=Fire)</label>
-          <label class="legend-toggle"><input type="checkbox" data-ds="5" checked><span style="background:#0ea5e9"></span> Pump ON/OFF (0/100)</label>
+
+        <!-- Compact Height Canvas (170px for zero unnecessary scroll) -->
+        <div style="position:relative;height:170px;width:100%;">
+          <canvas id="sensorChart"></canvas>
         </div>
-      </div>
-      <div class="card" style="padding:16px;position:relative;">
-        <div id="graphStatus" style="position:absolute;top:16px;right:18px;font-size:11px;color:var(--muted);font-weight:600">
-          <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 1.5s infinite;margin-right:5px;vertical-align:middle"></span>Recording live data...
-        </div>
-        <canvas id="sensorChart" style="width:100%;height:340px;"></canvas>
-        <div style="display:flex;justify-content:center;gap:28px;margin-top:12px;font-size:11px;color:var(--muted)">
-          <span id="gStatPoints">Points: 0</span>
-          <span id="gStatDuration">Duration: 0s</span>
-          <span id="gStatTemp">Avg Temp: &#x2014;</span>
-          <span id="gStatSoil">Avg Soil: &#x2014;</span>
+
+        <!-- Bottom Stats Row -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:5px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;gap:12px;">
+            <span id="gStatPoints">Points: 0</span>
+            <span id="gStatDuration">Duration: 0s</span>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <span id="gStatTemp">Avg Temp: —</span>
+            <span id="gStatSoil">Avg Soil: —</span>
+          </div>
         </div>
       </div>
     </section>
@@ -1020,33 +1033,33 @@ function initChart() {
         datasets: [
           {
             label: 'Temperature (°C)',
-            data: [], borderColor: '#ef4444', backgroundColor: '#ef444420',
-            tension: 0.35, pointRadius: 2, borderWidth: 2, fill: false, yAxisID: 'y'
+            data: [], borderColor: '#ef4444', backgroundColor: '#ef444415',
+            tension: 0.3, pointRadius: 0, pointHoverRadius: 4, borderWidth: 1.8, fill: false, yAxisID: 'y'
           },
           {
             label: 'Humidity (%)',
-            data: [], borderColor: '#3b82f6', backgroundColor: '#3b82f620',
-            tension: 0.35, pointRadius: 2, borderWidth: 2, fill: false, yAxisID: 'y'
+            data: [], borderColor: '#3b82f6', backgroundColor: '#3b82f615',
+            tension: 0.3, pointRadius: 0, pointHoverRadius: 4, borderWidth: 1.8, fill: false, yAxisID: 'y'
           },
           {
             label: 'Soil Moisture (%)',
-            data: [], borderColor: '#22c55e', backgroundColor: '#22c55e20',
-            tension: 0.35, pointRadius: 2, borderWidth: 2, fill: false, yAxisID: 'y'
+            data: [], borderColor: '#22c55e', backgroundColor: '#22c55e15',
+            tension: 0.3, pointRadius: 0, pointHoverRadius: 4, borderWidth: 1.8, fill: false, yAxisID: 'y'
           },
           {
             label: 'Rain Level (ADC÷40)',
-            data: [], borderColor: '#f59e0b', backgroundColor: '#f59e0b20',
-            tension: 0.35, pointRadius: 2, borderWidth: 2, fill: false, yAxisID: 'y'
+            data: [], borderColor: '#f59e0b', backgroundColor: '#f59e0b15',
+            tension: 0.3, pointRadius: 0, pointHoverRadius: 4, borderWidth: 1.8, fill: false, yAxisID: 'y'
           },
           {
             label: 'Flame (0=Safe/100=Fire)',
-            data: [], borderColor: '#8b5cf6', backgroundColor: '#8b5cf620',
-            tension: 0.1, pointRadius: 2, borderWidth: 2.5, stepped: true, fill: false, yAxisID: 'y'
+            data: [], borderColor: '#8b5cf6', backgroundColor: '#8b5cf615',
+            tension: 0.1, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2, stepped: true, fill: false, yAxisID: 'y'
           },
           {
             label: 'Pump ON/OFF (0/100)',
-            data: [], borderColor: '#0ea5e9', backgroundColor: '#0ea5e920',
-            tension: 0.1, pointRadius: 2, borderWidth: 2, stepped: true, fill: false, yAxisID: 'y'
+            data: [], borderColor: '#0ea5e9', backgroundColor: '#0ea5e915',
+            tension: 0.1, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2, stepped: true, fill: false, yAxisID: 'y'
           }
         ]
       },
@@ -1055,13 +1068,16 @@ function initChart() {
         maintainAspectRatio: false,
         animation: false,
         interaction: { mode: 'index', intersect: false },
+        layout: {
+          padding: { top: 4, bottom: 2, left: 2, right: 6 }
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
             backgroundColor: 'rgba(10,20,15,0.92)',
-            titleFont: { size: 11 },
-            bodyFont: { size: 11 },
-            padding: 10,
+            titleFont: { size: 10.5 },
+            bodyFont: { size: 10.5 },
+            padding: 8,
             callbacks: {
               label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? Number(ctx.parsed.y).toFixed(1) : '—'}`
             }
@@ -1069,14 +1085,14 @@ function initChart() {
         },
         scales: {
           x: {
-            ticks: { maxTicksLimit: 8, maxRotation: 0, font: { size: 10 }, color: '#7a8c82' },
-            grid: { color: '#e8ede9' }
+            ticks: { maxTicksLimit: 6, maxRotation: 0, font: { size: 9 }, color: '#7a8c82' },
+            grid: { color: '#eef2ee' }
           },
           y: {
             min: 0, max: 110,
-            ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#7a8c82' },
-            grid: { color: '#e8ede9' },
-            title: { display: true, text: 'Sensor Value (normalized 0–100 scale)', font: { size: 10 }, color: '#7a8c82' }
+            ticks: { maxTicksLimit: 4, font: { size: 9 }, color: '#7a8c82' },
+            grid: { color: '#eef2ee' },
+            title: { display: false }
           }
         }
       }
