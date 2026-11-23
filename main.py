@@ -87,15 +87,25 @@ class LoginRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
+    updated_at = latest_data.get("updated_at")
+    connected = False
+    if updated_at:
+        connected = (time.time() - updated_at) < 20
+    latest_data["device_connected"] = connected
     return {
         "status": "online",
         "service": "FieldSense IoT Cloud",
         "timestamp": int(time.time()),
-        "device_connected": latest_data.get("device_connected", False)
+        "device_connected": connected
     }
 
 @app.get("/api/status")
 def get_status():
+    updated_at = latest_data.get("updated_at")
+    if updated_at:
+        latest_data["device_connected"] = (time.time() - updated_at) < 20
+    else:
+        latest_data["device_connected"] = False
     return latest_data
 
 @app.post("/api/login")

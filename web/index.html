@@ -561,20 +561,26 @@ $('logout').onclick = async () => {
 };
 
 // TELEMETRY POLLING
+let isPolling = false;
 async function pollTelemetry() {
+  if (isPolling) return;
+  isPolling = true;
   try {
-    const res = await fetch('/api/status');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2800);
+    const res = await fetch('/api/status', { signal: controller.signal, cache: 'no-store' });
+    clearTimeout(timeoutId);
     if (!res.ok) throw new Error('Status fetch failed');
     const data = await res.json();
 
     // Node status pill
     if (data.updated_at) {
       const secondsAgo = Math.max(0, Math.floor(Date.now() / 1000) - data.updated_at);
-      if (secondsAgo <= 2) {
+      if (secondsAgo <= 4) {
         $('nodePill').className = 'pill';
         $('nodeDot').className = 'status-dot';
-        $('nodeStatus').textContent = `Node Live (1s sync)`;
-      } else if (secondsAgo < 10) {
+        $('nodeStatus').textContent = `Node Live (Syncing)`;
+      } else if (secondsAgo < 16) {
         $('nodePill').className = 'pill';
         $('nodeDot').className = 'status-dot';
         $('nodeStatus').textContent = `Node Online (${secondsAgo}s ago)`;
@@ -583,7 +589,7 @@ async function pollTelemetry() {
         $('nodeDot').className = 'status-dot amber';
         $('nodeStatus').textContent = `Node Inactive (${secondsAgo}s ago)`;
       }
-      $('lastUpdatedPill').textContent = `● Live (1s sync) · ${new Date(data.updated_at * 1000).toLocaleTimeString()}`;
+      $('lastUpdatedPill').textContent = `● Live · ${new Date(data.updated_at * 1000).toLocaleTimeString()}`;
     } else {
       $('nodePill').className = 'pill offline';
       $('nodeDot').className = 'status-dot amber';
@@ -660,6 +666,8 @@ async function pollTelemetry() {
 
   } catch (err) {
     console.warn('Telemetry error:', err.message);
+  } finally {
+    isPolling = false;
   }
 }
 
