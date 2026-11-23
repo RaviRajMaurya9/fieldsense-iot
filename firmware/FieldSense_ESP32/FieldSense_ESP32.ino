@@ -43,7 +43,7 @@
 // ================= USER CONFIGURATION =================
 // 1. Enter your 2.4GHz Wi-Fi details (ESP32 only supports 2.4GHz)
 const char *WIFI_SSID = "ravi";
-const char *WIFI_PASSWORD = "";
+const char *WIFI_PASSWORD = "23712371";
 
 // 2. BACKEND SERVER URL:
 //    - When ESP32 is connected to your Laptop Mobile Hotspot:
@@ -52,7 +52,7 @@ const char *WIFI_PASSWORD = "";
 //      Use: "http://10.58.27.10:8000"
 //    - For RENDER CLOUD deployment:
 //      Use: "https://fieldsense-iot.onrender.com"
-const char *SERVER_URL = "http://192.168.137.1:8000";
+const char *SERVER_URL = "https://fieldsense-iot.onrender.com";
 
 // 3. Secret Device Authentication Token (matches DEVICE_TOKEN on server)
 const char *DEVICE_TOKEN = "FieldSenseSecretToken2026";
