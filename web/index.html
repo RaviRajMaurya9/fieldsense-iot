@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FieldSense — Smart Agriculture IoT</title>
+<style>
+:root{--ink:#172b22;--muted:#718078;--green:#1e704b;--lime:#c8ed83;--cream:#f5f7ef;--card:#fff;--line:#e6ebdf;--amber:#e7a83e;--red:#d65b4a;--blue:#2563eb;--shadow:0 12px 35px #1b39200d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.login{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;background:#f6f7ef}
+.login-art{padding:7vw;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,#123e2c,#226c48);color:white;position:relative;overflow:hidden}
+.login-art:after{content:"";position:absolute;width:560px;height:560px;border:1px solid #ffffff24;border-radius:50%;right:-180px;bottom:-220px;box-shadow:0 0 0 55px #ffffff0c,0 0 0 110px #ffffff08}
+.brand{font-weight:800;letter-spacing:-.04em;font-size:22px}
+.brand span{color:var(--lime)}
+.art-copy{max-width:520px;z-index:1}
+.art-copy h1{font-size:clamp(42px,5vw,72px);line-height:1.02;letter-spacing:-.055em;margin:0 0 20px}
+.art-copy p{color:#d2e5d8;font-size:17px}
+.art-bottom{color:#c5ddce;font-size:13px;z-index:1}
+.login-panel{display:grid;place-items:center;padding:30px}
+.login-box{width:min(410px,100%)}
+.login-box h2{font-size:30px;letter-spacing:-.04em;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 28px}
+.field{display:grid;gap:7px;margin:16px 0}
+.field label{font-size:13px;font-weight:650}
+.field input{border:1px solid var(--line);border-radius:12px;padding:13px 14px;background:white;outline:none}
+.field input:focus{border-color:var(--green);box-shadow:0 0 0 3px #1e704b16}
+.primary{border:0;border-radius:12px;background:var(--green);color:white;padding:13px 18px;font-weight:700}
+.primary:hover{background:#155b3b}
+.full{width:100%}
+.hint{font-size:12px;color:var(--muted);margin-top:14px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:245px;background:#173e2c;color:white;padding:25px 17px;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:5}
+.sidebar .brand{padding:0 12px 34px}
+.nav-label{font-size:10px;color:#91b6a0;text-transform:uppercase;letter-spacing:.13em;padding:0 12px 10px}
+.nav{display:grid;gap:5px}
+.nav a{color:#d3e3d8;text-decoration:none;padding:11px 12px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:10px}
+.nav a:hover,.nav a.active{background:#ffffff18;color:#fff}
+.nav a b{display:inline-block;width:20px;font-size:16px}
+.side-foot{margin-top:auto;padding:14px 12px;color:#a9c6b4;font-size:12px;border-top:1px solid #ffffff1c}
+.main{margin-left:245px;width:calc(100% - 245px);padding:28px clamp(18px,3vw,46px) 60px;max-width:1700px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:26px}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-weight:800}
+.topbar h1{font-size:30px;letter-spacing:-.05em;margin:3px 0}
+.top-actions{display:flex;align-items:center;gap:10px}
+.pill{background:#e7efe4;color:#286044;padding:8px 12px;border-radius:30px;font-size:12px;font-weight:700;display:inline-flex;align-items:center}
+.pill.offline{background:#fee2e2;color:#b91c1c}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--lime);display:grid;place-items:center;font-weight:800;color:var(--ink)}
+.section{margin:28px 0 36px;scroll-margin-top:20px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:15px}
+.section h2{font-size:21px;letter-spacing:-.04em;margin:0}
+.section-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.grid{display:grid;gap:14px}
+.metrics{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:18px;box-shadow:var(--shadow);transition:border-color 0.3s,box-shadow 0.3s,background 0.3s}
+.card.fire-alarm{border-color:#ef4444!important;background:#fef2f2!important;box-shadow:0 0 18px rgba(239,68,68,0.35)!important;animation:pulse-alarm 1.5s infinite}
+@keyframes pulse-alarm{0%{box-shadow:0 0 10px rgba(239,68,68,0.25)}50%{box-shadow:0 0 24px rgba(220,38,38,0.5)}100%{box-shadow:0 0 10px rgba(239,68,68,0.25)}}
+.metric-top{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
+.metric-icon{font-size:19px}
+.metric-value{font-size:28px;font-weight:800;letter-spacing:-.05em;margin:12px 0 2px}
+.metric-note{font-size:11px;color:var(--muted)}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4caf78;margin-right:6px}
+.status-dot.red{background:var(--red)}
+.status-dot.amber{background:var(--amber)}
+.two{grid-template-columns:1.2fr .8fr}
+.camera{background:#12231b;border-radius:16px;overflow:hidden;min-height:300px;position:relative;display:grid;place-items:center;color:white}
+.camera img{width:100%;height:100%;object-fit:contain;position:absolute;inset:0;background:#08100c}
+.camera-placeholder{text-align:center;padding:30px;z-index:1;width:100%}
+.camera-placeholder .cam-icon{font-size:38px}
+.camera-placeholder p{color:#b9c9bf;font-size:13px}
+.camera-url{display:flex;gap:8px;margin-top:12px;max-width:440px;margin-left:auto;margin-right:auto}
+.camera-url input{min-width:0;flex:1;border:1px solid #ffffff30;background:#ffffff12;color:white;border-radius:9px;padding:10px;font-size:12px}
+.camera-url button{background:var(--lime);color:#173e2c;border:0;border-radius:9px;padding:0 14px;font-weight:700;font-size:12px}
+.camera-badge{position:absolute;top:13px;left:13px;background:#d94d3c;color:white;padding:5px 10px;border-radius:20px;font-size:10px;font-weight:800;z-index:3;letter-spacing:0.04em}
+.camera-controls{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(transparent,rgba(0,0,0,0.88));display:flex;justify-content:space-between;align-items:center;z-index:3;gap:10px}
+.cam-info{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 1.5s infinite}
+@keyframes pulse{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
+.cam-btns{display:flex;gap:6px;flex-wrap:wrap}
+.cam-action-btn{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:600;backdrop-filter:blur(4px);transition:0.15s;cursor:pointer}
+.cam-action-btn:hover{background:rgba(255,255,255,0.35)}
+.disconnect-btn{background:#dc2626d0;border-color:#ef4444}
+.disconnect-btn:hover{background:#ef4444}
+.pump-card{display:flex;flex-direction:column;justify-content:space-between}
+.pump-row{display:flex;align-items:center;justify-content:space-between;margin:15px 0}
+.pump-state{font-size:26px;font-weight:800;letter-spacing:-.04em}
+.toggle{width:54px;height:30px;border:0;border-radius:20px;background:#d9e0d9;padding:3px;position:relative;transition:.2s}
+.toggle:after{content:"";display:block;width:24px;height:24px;border-radius:50%;background:white;transition:.2s}
+.toggle.on{background:var(--green)}
+.toggle.on:after{transform:translateX(24px)}
+.warning{padding:11px 13px;background:#fff6e6;color:#8b5b13;border-radius:10px;font-size:12px;margin-top:16px}
+.danger-alert{padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:14px}
+.upload-box{border:1.5px dashed #b7c8b7;border-radius:14px;padding:22px;text-align:center;background:#f9fbf6}
+.upload-box input{max-width:100%;margin:12px auto}
+.preview{max-width:200px;max-height:160px;object-fit:cover;border-radius:10px;margin:12px auto;display:block}
+.result{background:#f1f7ee;border-radius:12px;padding:16px;margin-top:12px;font-size:13px}
+.result h3{margin:0 0 6px;font-size:16px}
+.muted{color:var(--muted)}
+.recommendations{grid-template-columns:repeat(3,1fr)}
+.tip-icon{font-size:23px}
+.tip-card h3{font-size:15px;margin:9px 0 5px}
+.tip-card p{font-size:12px;color:var(--muted);margin:0}
+.weather-tools{display:flex;gap:8px;align-items:center}
+.weather-tools input{border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:190px}
+.weather-tools button{padding:9px 12px}
+.weather-now{display:flex;align-items:center;gap:18px;margin-bottom:14px}
+.weather-now strong{font-size:32px;letter-spacing:-.05em}
+.weather-table{width:100%;border-collapse:collapse;font-size:12px}
+.weather-table th,.weather-table td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line)}
+.weather-table th{color:var(--muted);font-weight:650}
+.weather-table tr:last-child td{border:0}
+.table-wrap{overflow:auto}
+.footer{text-align:center;color:#87938b;font-size:11px;margin-top:50px}
+.small-btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:9px;padding:8px 12px;font-size:12px;font-weight:650}
+.small-btn:hover{background:#f4f6f0}
+.badge-tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.badge-green{background:#dcfce7;color:#15803d}
+.legend-toggle{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);user-select:none}
+.legend-toggle input{accent-color:var(--green);cursor:pointer}
+.legend-toggle span{display:inline-block;width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.badge-red{background:#fee2e2;color:#b91c1c}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+@media(max-width:1050px){.metrics{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.recommendations{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.login{grid-template-columns:1fr}.login-art{min-height:290px;padding:28px}.art-copy h1{font-size:42px}.art-bottom{display:none}.sidebar{width:62px;padding:18px 8px}.sidebar .brand{font-size:0;padding:0 9px 30px}.sidebar .brand:first-letter{font-size:22px}.nav-label,.nav a:not(.active) span{display:none}.nav a{padding:12px 10px;justify-content:center}.main{margin-left:62px;width:calc(100% - 62px);padding:19px 13px 40px}.topbar h1{font-size:24px}.top-actions .pill{display:none}.metrics{gap:9px}.card{padding:14px}.metric-value{font-size:24px}.recommendations{grid-template-columns:1fr}.section-head{align-items:start;flex-direction:column}.weather-tools{width:100%}.weather-tools input{flex:1;min-width:0}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- LOGIN VIEW -->
+<section class="login" id="login">
+  <div class="login-art">
+    <div class="brand">field<span>sense</span> ✳</div>
+    <div class="art-copy">
+      <div class="eyebrow" style="color:#c8ed83">A clearer view of every field</div>
+      <h1>Grow smarter.<br>Waste less.</h1>
+      <p>One simple place to monitor field sensors, control irrigation, stream live cameras and diagnose plant diseases.</p>
+    </div>
+    <div class="art-bottom">SMART AGRICULTURE · IOT CLOUD DASHBOARD</div>
+  </div>
+  <div class="login-panel">
+    <form class="login-box" id="loginForm">
+      <div class="eyebrow">Welcome back</div>
+      <h2>Sign in to FieldSense</h2>
+      <p class="sub">Access your farm node and field control.</p>
+      <div id="loginError" class="danger-alert hidden"></div>
+      <div class="field">
+        <label for="username">Username / Farmer ID</label>
+        <input id="username" type="text" value="farmer" placeholder="farmer" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" value="farm123" placeholder="Enter password" required autocomplete="current-password">
+      </div>
+      <button class="primary full" id="loginBtn" type="submit">Sign in to dashboard →</button>
+      <button type="button" class="small-btn full" style="margin-top:10px;padding:12px;text-align:center;" onclick="showApp();">⚡ Direct Access / View Live Sensors</button>
+      <p class="hint">Local testing default credentials: <code>farmer</code> / <code>farm123</code></p>
+    </form>
+  </div>
+</section>
+
+<!-- MAIN APP VIEW -->
+<div class="app hidden" id="app">
+  <aside class="sidebar">
+    <div class="brand">field<span>sense</span> ✳</div>
+    <div class="nav-label">Farm workspace</div>
+    <nav class="nav">
+      <a class="active" href="#overview"><b>⌂</b><span>Overview</span></a>
+      <a href="#camera"><b>◉</b><span>Live Camera & Pump</span></a>
+      <a href="#plant"><b>✿</b><span>AI Plant Health</span></a>
+      <a href="#advice"><b>↗</b><span>Crop Advisor</span></a>
+      <a href="#weather"><b>☼</b><span>10-Day Weather</span></a>
+      <a href="#analytics"><b>📈</b><span>Sensor Analytics</span></a>
+    </nav>
+    <div class="side-foot">
+      <strong>ESP32 NODE #1</strong><br>
+      Cloud Connected · Render
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Connected Farm Node</div>
+        <h1>Good day, Farmer <span style="color:var(--green)">✳</span></h1>
+        <div class="muted" style="font-size:12px" id="today"></div>
+      </div>
+      <div class="top-actions">
+        <span class="pill" style="background:#e0f2fe;color:#0369a1;"><span style="margin-right:5px">📡</span>ESP32 Target: 192.168.137.1:8000</span>
+        <span class="pill" id="nodePill"><span class="status-dot" id="nodeDot"></span><span id="nodeStatus">Checking Node...</span></span>
+        <div class="avatar" title="Logged in">F</div>
+        <button class="small-btn" id="logout">Log out</button>
+      </div>
+    </header>
+
+    <!-- FIRE ALERT BANNER -->
+    <div id="fireAlertBanner" class="danger-alert hidden">
+      🚨 <strong>CRITICAL FIRE ALERT:</strong> Flame detected in the field! Emergency firefighting active: Water pump is operating to extinguish the fire.
+    </div>
+
+    <!-- OVERVIEW: SENSORS -->
+    <section class="section" id="overview">
+      <div class="section-head">
+        <div>
+          <h2>Field overview</h2>
+          <p>Live telemetry from your ESP32 field monitoring unit</p>
+        </div>
+        <span class="pill" id="lastUpdatedPill">● Waiting for data</span>
+      </div>
+      <div class="grid metrics">
+        <div class="card">
+          <div class="metric-top"><span>Air temperature</span><span class="metric-icon">🌡️</span></div>
+          <div class="metric-value" id="temp">-- °C</div>
+          <div class="metric-note">DHT11 Digital · <span id="tempNote">Normal</span></div>
+        </div>
+        <div class="card">
+          <div class="metric-top"><span>Air humidity</span><span class="metric-icon">💧</span></div>
+          <div class="metric-value" id="humidity">-- %</div>
+          <div class="metric-note">DHT11 Relative humidity</div>
+        </div>
+        <div class="card">
+          <div class="metric-top"><span>Soil moisture</span><span class="metric-icon">🌱</span></div>
+          <div class="metric-value" id="soil">-- %</div>
+          <div class="metric-note" id="soilNote">Capacitive Sensor (GPIO 34)</div>
+        </div>
+        <div class="card">
+          <div class="metric-top"><span>Rain status</span><span class="metric-icon" id="rainIcon">🌧️</span></div>
+          <div class="metric-value" id="rainStatus" style="font-size:24px">No Rain</div>
+          <div class="metric-note" id="rainDetail"><span class="badge-tag badge-green">☀️ Dry · Clear</span> ADC: --</div>
+        </div>
+        <!-- DEDICATED FLAME CONDITION BLOCK -->
+        <div class="card" id="flameCard">
+          <div class="metric-top"><span>Flame condition</span><span class="metric-icon" id="flameIcon">🛡️</span></div>
+          <div class="metric-value" id="flameStatus" style="font-size:24px"><span style="color:#16a34a">Safe</span></div>
+          <div class="metric-note" id="flameDetail"><span class="badge-tag badge-green">🛡️ Safe · No Fire</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAMERA & PUMP -->
+    <section class="section grid two" id="camera">
+      <div>
+        <div class="section-head">
+          <div>
+            <h2>Live field camera</h2>
+            <p>Real-time visual monitoring via ESP32-CAM module</p>
+          </div>
+        </div>
+        <div class="camera" id="cameraBox">
+          <span class="camera-badge" id="cameraBadge">● ESP32-CAM</span>
+          
+          <!-- Live Stream Image (Full video display, no text blocking it) -->
+          <img id="camStream" class="hidden" alt="Live ESP32 Camera Stream" />
+          
+          <!-- Setup input form (Automatically disappears when connected!) -->
+          <div class="camera-placeholder" id="camPlaceholder">
+            <div class="cam-icon">📷</div>
+            <strong>ESP32-CAM Stream</strong>
+            <p>Enter your ESP32-CAM stream URL below.<br>Current stream: <code>http://192.168.137.73:81/stream</code></p>
+            <div class="camera-url">
+              <input id="camUrl" value="http://192.168.137.73:81/stream" placeholder="http://192.168.137.73:81/stream">
+              <button id="connectCam" type="button">Connect</button>
+            </div>
+          </div>
+
+          <!-- Live Video Controls Overlay (Shown ONLY while streaming) -->
+          <div class="camera-controls hidden" id="camControls">
+            <div class="cam-info">
+              <span class="live-dot"></span>
+              <span id="camQualityLabel">Live (Real-Time)</span>
+            </div>
+            <div class="cam-btns">
+              <button type="button" class="cam-action-btn" id="btnSync" title="Drop buffer lag & resync live video">⚡ Zero-Lag Sync</button>
+              <button type="button" class="cam-action-btn" id="btnHD" title="SVGA 800x600 High Detail">HD Quality</button>
+              <button type="button" class="cam-action-btn" id="btnSmooth" title="VGA 640x480 Smooth 30 FPS">Smooth 30 FPS</button>
+              <button type="button" class="cam-action-btn" id="btnFullscreen" title="Fullscreen View">⛶</button>
+              <button type="button" class="cam-action-btn disconnect-btn" id="btnDisconnect" title="Disconnect & show URL input">Disconnect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card pump-card">
+        <div>
+          <div class="section-head">
+            <div>
+              <h2>Water pump control</h2>
+              <p>Irrigation automation & manual switch</p>
+            </div>
+            <span class="metric-icon">🚿</span>
+          </div>
+
+          <!-- Mode Selector (Auto vs Manual) -->
+          <div style="display:flex;gap:8px;margin:6px 0 14px;">
+            <button type="button" class="cam-action-btn" id="btnModeAuto" style="background:#1e704b;color:#fff;border-color:#1e704b;padding:6px 12px;font-size:12px;">🤖 Auto Mode (Active)</button>
+            <button type="button" class="cam-action-btn" id="btnModeManual" style="background:rgba(0,0,0,0.06);color:var(--ink);border-color:var(--line);padding:6px 12px;font-size:12px;">✋ Manual Mode</button>
+          </div>
+
+          <div class="pump-row">
+            <div>
+              <div class="muted" style="font-size:12px">Pump relay status</div>
+              <div class="pump-state" id="pumpState">OFF</div>
+            </div>
+            <button class="toggle" id="pumpToggle" aria-label="Toggle water pump"></button>
+          </div>
+
+          <div class="warning" id="modeDesc" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;">
+            🤖 <strong>Auto Mode:</strong> Water pump runs automatically to <strong>extinguish fire</strong> if flame is detected, and irrigates when soil is dry (&lt;35%).
+          </div>
+        </div>
+        <div class="muted" style="font-size:12px;margin-top:12px">
+          Field Control: Switch anytime via Web Toggle or <strong>Physical Switch (GPIO 13)</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANT DISEASE AI -->
+    <section class="section" id="plant">
+      <div class="section-head">
+        <div>
+          <h2>AI Plant Disease Detection</h2>
+          <p>Upload a photograph of crop leaf to detect diseases, symptoms, and treatments</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <div class="upload-box">
+            <div style="font-size:32px">🍃</div>
+            <strong>Upload a leaf image</strong>
+            <p class="muted" style="font-size:12px">JPG, PNG or WEBP · Clear, well-lit photo of affected leaf</p>
+            <input type="file" id="plantImage" accept="image/*">
+            <div id="imagePreview"></div>
+            <button class="primary" id="analyzeBtn" disabled>Scan & Diagnose Leaf</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">Diagnostic AI Engine</div>
+          <h3 style="margin:6px 0">Agronomic Assessment</h3>
+          <p class="muted" style="font-size:13px">Analyzes visual markers against common crop pathogens (early blight, late blight, rust, leaf spot, mildew, and nutrient deficiency).</p>
+          <div id="plantResult" class="result">
+            <h3>Ready for Image</h3>
+            <span class="muted">Upload a photograph and click "Scan & Diagnose Leaf" to view AI disease evaluation.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CROP ADVISOR -->
+    <section class="section" id="advice">
+      <div class="section-head">
+        <div>
+          <h2>Crop advisor & management</h2>
+          <p>Agronomic guidelines based on soil readings and weather</p>
+        </div>
+      </div>
+      <div class="grid recommendations">
+        <div class="card tip-card">
+          <div class="tip-icon">🌾</div>
+          <h3>Crop Recommendation</h3>
+          <p id="cropTip">Based on warm weather and medium soil moisture: Ideal season for Tomato, Maize, Chillies, or Cotton. Ensure drainage during rain.</p>
+        </div>
+        <div class="card tip-card">
+          <div class="tip-icon">💦</div>
+          <h3>Smart Irrigation Logic</h3>
+          <p id="irrigationTip">Maintain soil moisture between 40% and 70%. When rain sensor detects rainfall, irrigation is automatically postponed.</p>
+        </div>
+        <div class="card tip-card">
+          <div class="tip-icon">🧑‍🌾</div>
+          <h3>Field Care Checklist</h3>
+          <p>Inspect under-surface of leaves weekly, check drip nozzles for sediment buildup, and ensure common ground between 12V supply and ESP32.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10-DAY WEATHER -->
+    <section class="section" id="weather">
+      <div class="section-head">
+        <div>
+          <h2>10-day local weather forecast</h2>
+          <p>Accurate meteorological data with rainfall and temperature trends</p>
+        </div>
+        <div class="weather-tools">
+          <input id="locationInput" value="Bengaluru, India" aria-label="Location" placeholder="Enter city or district">
+          <button class="primary" id="weatherBtn">Get forecast</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="weather-now">
+          <div style="font-size:34px">⛅</div>
+          <div>
+            <div class="muted" style="font-size:12px" id="weatherPlace">Bengaluru, Karnataka, India</div>
+            <strong id="weatherSummary">—</strong>
+          </div>
+          <div class="muted" style="font-size:12px" id="weatherNote">Loading forecast...</div>
+        </div>
+        <div class="table-wrap">
+          <table class="weather-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Condition</th>
+                <th>Min / Max</th>
+                <th>Rain chance</th>
+                <th>Rainfall</th>
+                <th>Wind speed</th>
+              </tr>
+            </thead>
+            <tbody id="weatherRows">
+              <tr><td colspan="6" class="muted">Loading forecast data from Open-Meteo...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">Meteorological forecast powered by Open-Meteo API. Real-time geocoding allows searching any village, town, or city worldwide.</p>
+      </div>
+    </section>
+
+    <!-- SENSOR ANALYTICS GRAPH -->
+    <section class="section" id="analytics">
+      <div class="section-head">
+        <div>
+          <h2>&#x1F4C8; Sensor Analytics</h2>
+          <p>Live rolling history of all sensor readings &#x2014; updated every second</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="graphRange" style="border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:12px;background:white;color:var(--ink)">
+            <option value="60">Last 1 min</option>
+            <option value="300" selected>Last 5 min</option>
+            <option value="600">Last 10 min</option>
+            <option value="1800">Last 30 min</option>
+          </select>
+          <button class="small-btn" id="clearGraphBtn">&#x1F5D1; Clear Data</button>
+          <button class="small-btn" id="downloadCsvBtn">&#x2B07; Export CSV</button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:12px;padding:12px 16px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Toggle Sensors:</span>
+          <label class="legend-toggle"><input type="checkbox" data-ds="0" checked><span style="background:#ef4444"></span> Temperature (&#x00B0;C)</label>
+          <label class="legend-toggle"><input type="checkbox" data-ds="1" checked><span style="background:#3b82f6"></span> Humidity (%)</label>
+          <label class="legend-toggle"><input type="checkbox" data-ds="2" checked><span style="background:#22c55e"></span> Soil Moisture (%)</label>
+          <label class="legend-toggle"><input type="checkbox" data-ds="3" checked><span style="background:#f59e0b"></span> Rain Level (ADC&#xF7;40)</label>
+          <label class="legend-toggle"><input type="checkbox" data-ds="4" checked><span style="background:#8b5cf6"></span> Flame (0=Safe/100=Fire)</label>
+          <label class="legend-toggle"><input type="checkbox" data-ds="5" checked><span style="background:#0ea5e9"></span> Pump ON/OFF (0/100)</label>
+        </div>
+      </div>
+      <div class="card" style="padding:16px;position:relative;">
+        <div id="graphStatus" style="position:absolute;top:16px;right:18px;font-size:11px;color:var(--muted);font-weight:600">
+          <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 1.5s infinite;margin-right:5px;vertical-align:middle"></span>Recording live data...
+        </div>
+        <canvas id="sensorChart" style="width:100%;height:340px;"></canvas>
+        <div style="display:flex;justify-content:center;gap:28px;margin-top:12px;font-size:11px;color:var(--muted)">
+          <span id="gStatPoints">Points: 0</span>
+          <span id="gStatDuration">Duration: 0s</span>
+          <span id="gStatTemp">Avg Temp: &#x2014;</span>
+          <span id="gStatSoil">Avg Soil: &#x2014;</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      FieldSense · Smart IoT Agriculture Monitoring & Control · ESP32 + DHT11 + Capacitive Soil Moisture + Rain + Flame Sensor + ESP32-CAM
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// Date banner
+$('today').textContent = new Date().toLocaleDateString(undefined, {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
+
+// Navigation scroll
+document.querySelectorAll('.nav a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.querySelectorAll('.nav a').forEach(n => n.classList.remove('active'));
+    a.classList.add('active');
+  });
+});
+
+// Authentication state
+let currentPumpState = false;
+let telemetryTimer = null;
+
+async function checkSession() {
+  try {
+    const res = await fetch('/api/auth/me');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated) {
+        showApp();
+        return;
+      }
+    }
+  } catch(e) {}
+}
+
+function showApp() {
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  loadWeather();
+  pollTelemetry();
+  if (!telemetryTimer) {
+    telemetryTimer = setInterval(pollTelemetry, 1000); // Fast 1-second live telemetry refresh!
+  }
+}
+
+function showLogin() {
+  $('app').classList.add('hidden');
+  $('login').classList.remove('hidden');
+  if (telemetryTimer) {
+    clearInterval(telemetryTimer);
+    telemetryTimer = null;
+  }
+}
+
+// LOGIN SUBMIT
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = $('username').value.trim();
+  const password = $('password').value;
+  const btn = $('loginBtn');
+  const errBox = $('loginError');
+
+  btn.disabled = true;
+  btn.textContent = 'Authenticating...';
+  errBox.classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.detail || 'Invalid username or password');
+    }
+
+    showApp();
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign in to dashboard →';
+  }
+});
+
+// LOGOUT
+$('logout').onclick = async () => {
+  try {
+    await fetch('/api/logout', { method: 'POST' });
+  } catch(e) {}
+  showLogin();
+};
+
+// TELEMETRY POLLING
+async function pollTelemetry() {
+  try {
+    const res = await fetch('/api/status');
+    if (!res.ok) throw new Error('Status fetch failed');
+    const data = await res.json();
+
+    // Node status pill
+    if (data.updated_at) {
+      const secondsAgo = Math.max(0, Math.floor(Date.now() / 1000) - data.updated_at);
+      if (secondsAgo <= 2) {
+        $('nodePill').className = 'pill';
+        $('nodeDot').className = 'status-dot';
+        $('nodeStatus').textContent = `Node Live (1s sync)`;
+      } else if (secondsAgo < 10) {
+        $('nodePill').className = 'pill';
+        $('nodeDot').className = 'status-dot';
+        $('nodeStatus').textContent = `Node Online (${secondsAgo}s ago)`;
+      } else {
+        $('nodePill').className = 'pill offline';
+        $('nodeDot').className = 'status-dot amber';
+        $('nodeStatus').textContent = `Node Inactive (${secondsAgo}s ago)`;
+      }
+      $('lastUpdatedPill').textContent = `● Live (1s sync) · ${new Date(data.updated_at * 1000).toLocaleTimeString()}`;
+    } else {
+      $('nodePill').className = 'pill offline';
+      $('nodeDot').className = 'status-dot amber';
+      $('nodeStatus').textContent = 'Node Waiting for Data';
+      $('lastUpdatedPill').textContent = '● Awaiting ESP32 transmission';
+    }
+
+    // Temperature & Humidity
+    if (data.temperature_c != null) {
+      $('temp').textContent = data.temperature_c.toFixed(1) + ' °C';
+      $('tempNote').textContent = data.temperature_c > 35 ? 'High Temperature' : (data.temperature_c < 15 ? 'Low Temperature' : 'Optimal range');
+    }
+    if (data.humidity_pct != null) {
+      $('humidity').textContent = data.humidity_pct.toFixed(1) + ' %';
+    }
+
+    // Soil moisture
+    if (data.soil_moisture_pct != null) {
+      $('soil').textContent = Math.round(data.soil_moisture_pct) + ' %';
+      if (data.soil_moisture_pct < 30) {
+        $('soilNote').innerHTML = '<span class="badge-tag badge-red">Soil Dry — Irrigation Recommended</span>';
+      } else if (data.soil_moisture_pct > 75) {
+        $('soilNote').innerHTML = '<span class="badge-tag badge-blue">Soil Wet — Sufficient Moisture</span>';
+      } else {
+        $('soilNote').innerHTML = '<span class="badge-tag badge-green">Soil Optimal (Moist)</span>';
+      }
+    }
+
+    // Rain condition block
+    if (data.raining) {
+      if ($('rainStatus')) $('rainStatus').textContent = 'Rain Detected';
+      if ($('rainIcon')) $('rainIcon').textContent = '🌧️';
+      if ($('rainDetail')) $('rainDetail').innerHTML = `<span class="badge-tag badge-blue">🌧️ Wet / Raining</span> ADC: ${data.rain_raw ?? '--'}`;
+    } else {
+      if ($('rainStatus')) $('rainStatus').textContent = 'No Rain';
+      if ($('rainIcon')) $('rainIcon').textContent = '☀️';
+      if ($('rainDetail')) $('rainDetail').innerHTML = `<span class="badge-tag badge-green">☀️ Dry / Clear</span> ADC: ${data.rain_raw ?? '--'}`;
+    }
+
+    // Flame condition block (Dedicated Block)
+    if (data.fire_detected) {
+      if ($('flameStatus')) $('flameStatus').innerHTML = '<span style="color:#dc2626;font-weight:800">🔥 FIRE DETECTED!</span>';
+      if ($('flameIcon')) $('flameIcon').textContent = '🔥';
+      if ($('flameDetail')) $('flameDetail').innerHTML = '<span class="badge-tag badge-red">🚨 Firefighting Mode Active</span>';
+      if ($('flameCard')) $('flameCard').classList.add('fire-alarm');
+      $('fireAlertBanner').classList.remove('hidden');
+    } else {
+      if ($('flameStatus')) $('flameStatus').innerHTML = '<span style="color:#16a34a;font-weight:700">Safe / Normal</span>';
+      if ($('flameIcon')) $('flameIcon').textContent = '🛡️';
+      if ($('flameDetail')) $('flameDetail').innerHTML = '<span class="badge-tag badge-green">🛡️ Flame Sensor (GPIO 27)</span>';
+      if ($('flameCard')) $('flameCard').classList.remove('fire-alarm');
+      $('fireAlertBanner').classList.add('hidden');
+    }
+
+    // Pump state sync
+    currentPumpState = !!data.pump_on;
+    $('pumpToggle').classList.toggle('on', currentPumpState);
+    $('pumpState').textContent = currentPumpState ? 'ON' : 'OFF';
+    $('pumpState').style.color = currentPumpState ? 'var(--green)' : 'var(--ink)';
+
+    // Update dynamic crop tips based on soil and temp
+    if (data.temperature_c && data.soil_moisture_pct) {
+      if (data.soil_moisture_pct < 35 && !data.raining) {
+        $('cropTip').textContent = 'Soil moisture is dipping below 35%. Plan a 15-20 minute irrigation cycle unless rain is forecast today.';
+      } else if (data.raining) {
+        $('cropTip').textContent = 'Rainfall is currently detected. Water pump is automatically paused to conserve electricity and avoid waterlogging.';
+      }
+    }
+
+    // Auto / Manual mode sync from device/server
+    if (data.auto_mode != null && data.auto_mode !== currentAutoMode) {
+      updateModeUI(data.auto_mode);
+    }
+
+  } catch (err) {
+    console.warn('Telemetry error:', err.message);
+  }
+}
+
+// MODE & PUMP CONTROL
+let currentAutoMode = true;
+
+function updateModeUI(isAuto) {
+  currentAutoMode = isAuto;
+  if (isAuto) {
+    $('btnModeAuto').style.background = '#1e704b';
+    $('btnModeAuto').style.color = '#fff';
+    $('btnModeAuto').style.borderColor = '#1e704b';
+    $('btnModeAuto').textContent = '🤖 Auto Mode (Active)';
+
+    $('btnModeManual').style.background = 'rgba(0,0,0,0.06)';
+    $('btnModeManual').style.color = 'var(--ink)';
+    $('btnModeManual').style.borderColor = 'var(--line)';
+    $('btnModeManual').textContent = '✋ Manual Mode';
+
+    $('modeDesc').style.background = '#e0f2fe';
+    $('modeDesc').style.color = '#0369a1';
+    $('modeDesc').style.borderColor = '#bae6fd';
+    $('modeDesc').innerHTML = '🤖 <strong>Auto Mode Active:</strong> Pump automatically activates to <strong>extinguish fire</strong> if flame is detected, and irrigates when soil is dry (&lt;35%).';
+  } else {
+    $('btnModeManual').style.background = '#1e704b';
+    $('btnModeManual').style.color = '#fff';
+    $('btnModeManual').style.borderColor = '#1e704b';
+    $('btnModeManual').textContent = '✋ Manual Mode (Active)';
+
+    $('btnModeAuto').style.background = 'rgba(0,0,0,0.06)';
+    $('btnModeAuto').style.color = 'var(--ink)';
+    $('btnModeAuto').style.borderColor = 'var(--line)';
+    $('btnModeAuto').textContent = '🤖 Auto Mode';
+
+    $('modeDesc').style.background = '#fefce8';
+    $('modeDesc').style.color = '#854d0e';
+    $('modeDesc').style.borderColor = '#fef08a';
+    $('modeDesc').innerHTML = '✋ <strong>Manual Mode Active:</strong> Direct control active via Web Toggle or <strong>Physical Button (GPIO 13)</strong> in the field.';
+  }
+}
+
+$('btnModeAuto').onclick = async () => {
+  updateModeUI(true);
+  try {
+    await fetch('/api/pump', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ auto_mode: true })
+    });
+  } catch(e) {}
+};
+
+$('btnModeManual').onclick = async () => {
+  updateModeUI(false);
+  try {
+    await fetch('/api/pump', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ auto_mode: false })
+    });
+  } catch(e) {}
+};
+
+$('pumpToggle').onclick = async () => {
+  const targetState = !currentPumpState;
+  $('pumpToggle').disabled = true;
+  try {
+    const res = await fetch('/api/pump', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ on: targetState })
+    });
+    const result = await res.json();
+    if (!res.ok) {
+      throw new Error(result.detail || 'Pump control rejected');
+    }
+    currentPumpState = targetState;
+    $('pumpToggle').classList.toggle('on', currentPumpState);
+    $('pumpState').textContent = currentPumpState ? 'ON' : 'OFF';
+    $('pumpState').style.color = currentPumpState ? 'var(--green)' : 'var(--ink)';
+    // Manually flipping the pump switches to manual mode
+    updateModeUI(false);
+  } catch (err) {
+    alert('Pump Error: ' + err.message);
+  } finally {
+    $('pumpToggle').disabled = false;
+  }
+};
+
+// CAMERA STREAM & LOW-LATENCY CONTROLS
+let currentCamUrl = '';
+let camBaseIp = '';
+
+function extractCamIp(url) {
+  const m = url.match(/^https?:\/\/([^\/:]+)/i);
+  return m ? m[1] : '';
+}
+
+$('connectCam').onclick = () => {
+  const url = $('camUrl').value.trim();
+  if (!/^https?:\/\//i.test(url)) {
+    alert('Please enter a valid HTTP or HTTPS stream URL (e.g. http://192.168.137.73:81/stream)');
+    return;
+  }
+
+  currentCamUrl = url;
+  camBaseIp = extractCamIp(url);
+
+  const img = $('camStream');
+  img.src = '';
+  
+  // IMMEDIATELY HIDE the written placeholder text so only live video shows!
+  $('camPlaceholder').classList.add('hidden');
+  $('camControls').classList.remove('hidden');
+  $('cameraBadge').textContent = '● CONNECTING...';
+  $('cameraBadge').style.background = '#eab308';
+
+  img.onload = () => {
+    $('cameraBadge').textContent = '● LIVE (REAL-TIME)';
+    $('cameraBadge').style.background = '#16a34a';
+    $('camQualityLabel').textContent = 'Live (Synchronized)';
+  };
+
+  img.onerror = () => {
+    img.src = '';
+    img.classList.add('hidden');
+    $('camPlaceholder').classList.remove('hidden');
+    $('camControls').classList.add('hidden');
+    $('cameraBadge').textContent = '● STREAM OFFLINE';
+    $('cameraBadge').style.background = '#d94d3c';
+    alert('Could not connect to camera stream at ' + url + '.\n\nTips to fix:\n1. Verify ESP32-CAM is powered with a solid 5V source.\n2. Ensure laptop and camera are on the same Wi-Fi network.\n3. Make sure the port is :81/stream.');
+  };
+
+  img.classList.remove('hidden');
+  img.src = url;
+};
+
+// Disconnect Camera
+$('btnDisconnect').onclick = () => {
+  const img = $('camStream');
+  img.src = '';
+  img.classList.add('hidden');
+  $('camPlaceholder').classList.remove('hidden');
+  $('camControls').classList.add('hidden');
+  $('cameraBadge').textContent = '● ESP32-CAM';
+  $('cameraBadge').style.background = '#d94d3c';
+};
+
+// Zero-Lag Sync: Instantly flushes browser TCP socket buffer lag
+$('btnSync').onclick = () => {
+  const img = $('camStream');
+  if (!currentCamUrl) return;
+  const sep = currentCamUrl.includes('?') ? '&' : '?';
+  img.src = currentCamUrl + sep + '_sync=' + Date.now();
+  $('camQualityLabel').textContent = '⚡ Buffer Synced!';
+  setTimeout(() => {
+    $('camQualityLabel').textContent = 'Live (Zero-Lag Sync)';
+  }, 1800);
+};
+
+// HD Quality Switch (SVGA 800x600)
+$('btnHD').onclick = () => {
+  if (camBaseIp) {
+    fetch('http://' + camBaseIp + '/control?var=framesize&val=7', { mode: 'no-cors' }).catch(()=>{});
+    fetch('http://' + camBaseIp + '/control?var=quality&val=10', { mode: 'no-cors' }).catch(()=>{});
+  }
+  $('btnSync').click();
+  $('camQualityLabel').textContent = 'HD Mode (800x600)';
+};
+
+// Smooth 30 FPS Switch (VGA 640x480 - Maximum responsiveness and minimum lag)
+$('btnSmooth').onclick = () => {
+  if (camBaseIp) {
+    fetch('http://' + camBaseIp + '/control?var=framesize&val=6', { mode: 'no-cors' }).catch(()=>{});
+    fetch('http://' + camBaseIp + '/control?var=quality&val=14', { mode: 'no-cors' }).catch(()=>{});
+  }
+  $('btnSync').click();
+  $('camQualityLabel').textContent = 'Smooth Mode (30 FPS)';
+};
+
+// Fullscreen
+$('btnFullscreen').onclick = () => {
+  const box = $('cameraBox');
+  if (!document.fullscreenElement) {
+    box.requestFullscreen?.().catch(()=>{});
+  } else {
+    document.exitFullscreen?.().catch(()=>{});
+  }
+};
+
+// PLANT DISEASE AI UPLOAD
+let selectedFile = null;
+$('plantImage').onchange = (e) => {
+  selectedFile = e.target.files[0];
+  $('analyzeBtn').disabled = !selectedFile;
+  $('imagePreview').innerHTML = '';
+  if (selectedFile) {
+    const img = document.createElement('img');
+    img.className = 'preview';
+    img.src = URL.createObjectURL(selectedFile);
+    $('imagePreview').append(img);
+    $('plantResult').innerHTML = '<h3>Image Selected</h3><span class="muted">Click "Scan & Diagnose Leaf" to evaluate with AI model.</span>';
+  }
+};
+
+$('analyzeBtn').onclick = async () => {
+  if (!selectedFile) return;
+  const btn = $('analyzeBtn');
+  btn.disabled = true;
+  btn.textContent = 'Analyzing Leaf...';
+  $('plantResult').innerHTML = '<h3>Scanning Leaf...</h3><span class="muted">Running diagnostic feature extraction...</span>';
+
+  const formData = new FormData();
+  formData.append('image', selectedFile);
+
+  try {
+    const res = await fetch('/api/plant/analyze', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || 'Analysis failed');
+    }
+
+    $('plantResult').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="margin:0;color:var(--green)">${data.prediction}</h3>
+        <span class="badge-tag ${data.confidence > 75 ? 'badge-green' : 'badge-blue'}">${data.confidence}% Confidence</span>
+      </div>
+      <p style="margin:8px 0 4px;font-size:13px"><strong>Symptoms:</strong> ${data.symptoms || 'Visible discoloration or spotting on leaf tissue.'}</p>
+      <p style="margin:4px 0;font-size:13px"><strong>Treatment:</strong> ${data.treatment || data.advice}</p>
+      <p style="margin:4px 0;font-size:12px;color:var(--muted)"><strong>Prevention:</strong> ${data.prevention || 'Ensure proper leaf spacing, avoid overhead watering, and disinfect tools.'}</p>
+    `;
+  } catch (err) {
+    $('plantResult').innerHTML = `<h3 style="color:var(--red)">Analysis Error</h3><p>${err.message}</p>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Scan & Diagnose Leaf';
+  }
+};
+
+// 10-DAY WEATHER FORECAST (Open-Meteo)
+function weatherText(code) {
+  if (code === 0) return 'Sunny / Clear';
+  if ([1,2].includes(code)) return 'Partly Cloudy';
+  if (code === 3) return 'Overcast';
+  if ([45,48].includes(code)) return 'Foggy';
+  if ([51,53,55,56,57].includes(code)) return 'Drizzle';
+  if ([61,63,65,66,67,80,81,82].includes(code)) return 'Rain Shower';
+  if ([71,73,75,77,85,86].includes(code)) return 'Snow';
+  if ([95,96,99].includes(code)) return 'Thunderstorm';
+  return 'Variable';
+}
+
+async function loadWeather() {
+  const place = $('locationInput').value.trim();
+  if (!place) return;
+  const btn = $('weatherBtn');
+  btn.disabled = true;
+  btn.textContent = 'Loading...';
+  $('weatherRows').innerHTML = '<tr><td colspan="6">Fetching forecast data...</td></tr>';
+
+  try {
+    const g = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(place) + '&count=1&language=en&format=json');
+    if (!g.ok) throw new Error('Geocoding request failed');
+    const gd = await g.json();
+    if (!gd.results?.length) throw new Error('Location not found. Try entering a larger nearby city or district.');
+
+    const loc = gd.results[0];
+    $('weatherPlace').textContent = [loc.name, loc.admin1, loc.country].filter(Boolean).join(', ');
+
+    const u = `https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max&forecast_days=10&timezone=auto`;
+    const r = await fetch(u);
+    if (!r.ok) throw new Error('Forecast API unavailable');
+    const d = await r.json();
+
+    const days = d.daily.time.map((date, i) => ({
+      date,
+      code: d.daily.weather_code[i],
+      hi: d.daily.temperature_2m_max[i],
+      lo: d.daily.temperature_2m_min[i],
+      rain: d.daily.precipitation_probability_max[i],
+      mm: d.daily.precipitation_sum[i],
+      wind: d.daily.wind_speed_10m_max[i]
+    }));
+
+    $('weatherSummary').textContent = `${Math.round(days[0].hi)}° / ${Math.round(days[0].lo)}°C`;
+    $('weatherNote').textContent = `${weatherText(days[0].code)} today · ${days[0].rain ?? 0}% rain chance`;
+
+    $('weatherRows').innerHTML = days.map(x => `
+      <tr>
+        <td><strong>${new Date(x.date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</strong></td>
+        <td>${weatherText(x.code)}</td>
+        <td>${Math.round(x.lo)}° / ${Math.round(x.hi)}°C</td>
+        <td>${x.rain != null ? x.rain + '%' : '—'}</td>
+        <td>${Number(x.mm).toFixed(1)} mm</td>
+        <td>${Math.round(x.wind)} km/h</td>
+      </tr>
+    `).join('');
+
+  } catch (err) {
+    $('weatherRows').innerHTML = `<tr><td colspan="6" style="color:var(--red)">${err.message}</td></tr>`;
+    $('weatherSummary').textContent = '—';
+    $('weatherNote').textContent = 'Could not load forecast';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Get forecast';
+  }
+}
+
+$('weatherBtn').onclick = loadWeather;
+$('locationInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadWeather(); });
+
+
+// ===== SENSOR ANALYTICS GRAPH =====
+// History buffer: array of {ts, temp, hum, soil, rain, fire, pump}
+const sensorHistory = [];
+const MAX_HISTORY = 10800; // up to 3 hours at 1 sample/sec
+
+let sensorChart = null;
+let chartInitialized = false;
+
+function initChart() {
+  if (chartInitialized) return;
+  chartInitialized = true;
+
+  const ctx = document.getElementById('sensorChart');
+  if (!ctx) return;
+
+  sensorChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Temperature (°C)',
+          data: [], borderColor: '#ef4444', backgroundColor: '#ef444420',
+          tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false, yAxisID: 'y'
+        },
+        {
+          label: 'Humidity (%)',
+          data: [], borderColor: '#3b82f6', backgroundColor: '#3b82f620',
+          tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false, yAxisID: 'y'
+        },
+        {
+          label: 'Soil Moisture (%)',
+          data: [], borderColor: '#22c55e', backgroundColor: '#22c55e20',
+          tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false, yAxisID: 'y'
+        },
+        {
+          label: 'Rain Level (ADC÷40)',
+          data: [], borderColor: '#f59e0b', backgroundColor: '#f59e0b20',
+          tension: 0.4, pointRadius: 0, borderWidth: 2, fill: false, yAxisID: 'y'
+        },
+        {
+          label: 'Flame (0=Safe/100=Fire)',
+          data: [], borderColor: '#8b5cf6', backgroundColor: '#8b5cf620',
+          tension: 0.3, pointRadius: 2, borderWidth: 2.5, stepped: true, fill: false, yAxisID: 'y'
+        },
+        {
+          label: 'Pump ON/OFF (0/100)',
+          data: [], borderColor: '#0ea5e9', backgroundColor: '#0ea5e920',
+          tension: 0.1, pointRadius: 0, borderWidth: 2, stepped: true, fill: false, yAxisID: 'y'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(10,20,15,0.92)',
+          titleFont: { size: 11 },
+          bodyFont: { size: 11 },
+          padding: 10,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? Number(ctx.parsed.y).toFixed(1) : '—'}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { maxTicksLimit: 8, maxRotation: 0, font: { size: 10 }, color: '#7a8c82' },
+          grid: { color: '#e8ede9' }
+        },
+        y: {
+          min: 0, max: 110,
+          ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#7a8c82' },
+          grid: { color: '#e8ede9' },
+          title: { display: true, text: 'Sensor Value (normalized 0–100 scale)', font: { size: 10 }, color: '#7a8c82' }
+        }
+      }
+    }
+  });
+
+  // Wire toggle checkboxes
+  document.querySelectorAll('.legend-toggle input[data-ds]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const idx = parseInt(cb.dataset.ds);
+      sensorChart.data.datasets[idx].hidden = !cb.checked;
+      sensorChart.update('none');
+    });
+  });
+
+  // Clear data button
+  const clearBtn = document.getElementById('clearGraphBtn');
+  if (clearBtn) clearBtn.onclick = () => {
+    sensorHistory.length = 0;
+    updateChart();
+  };
+
+  // Export CSV
+  const csvBtn = document.getElementById('downloadCsvBtn');
+  if (csvBtn) csvBtn.onclick = () => {
+    if (!sensorHistory.length) return alert('No data recorded yet. Wait for live sensor updates.');
+    const header = 'Time,Temperature_C,Humidity_pct,Soil_Moisture_pct,Rain_ADC,Flame_Detected,Pump_ON\n';
+    const rows = sensorHistory.map(r =>
+      `${new Date(r.ts).toISOString()},${r.temp},${r.hum},${r.soil},${r.rain},${r.fire ? 1 : 0},${r.pump ? 1 : 0}`
+    ).join('\n');
+    const blob = new Blob([header + rows], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `fieldsense_data_${Date.now()}.csv`;
+    a.click();
+  };
+
+  // Range selector
+  const rangeEl = document.getElementById('graphRange');
+  if (rangeEl) rangeEl.addEventListener('change', () => updateChart());
+}
+
+function pushSensorPoint(data) {
+  if (!data || data.temperature_c == null) return;
+  sensorHistory.push({
+    ts: Date.now(),
+    temp: data.temperature_c,
+    hum: data.humidity_pct,
+    soil: data.soil_moisture_pct,
+    rain: data.rain_raw,
+    fire: data.fire_detected,
+    pump: data.pump_on
+  });
+  if (sensorHistory.length > MAX_HISTORY) sensorHistory.shift();
+  if (!chartInitialized) initChart();
+  updateChart();
+}
+
+function updateChart() {
+  if (!sensorChart) return;
+  const rangeEl = document.getElementById('graphRange');
+  const rangeSec = rangeEl ? parseInt(rangeEl.value) : 300;
+  const cutoff = Date.now() - rangeSec * 1000;
+  const slice = sensorHistory.filter(r => r.ts >= cutoff);
+
+  const labels = slice.map(r => new Date(r.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  sensorChart.data.labels = labels;
+  sensorChart.data.datasets[0].data = slice.map(r => r.temp);
+  sensorChart.data.datasets[1].data = slice.map(r => r.hum);
+  sensorChart.data.datasets[2].data = slice.map(r => r.soil);
+  sensorChart.data.datasets[3].data = slice.map(r => (r.rain / 40).toFixed(1));
+  sensorChart.data.datasets[4].data = slice.map(r => r.fire ? 100 : 0);
+  sensorChart.data.datasets[5].data = slice.map(r => r.pump ? 100 : 0);
+  sensorChart.update('none');
+
+  // Update stats
+  const pts = $('gStatPoints');
+  const dur = $('gStatDuration');
+  const avgT = $('gStatTemp');
+  const avgS = $('gStatSoil');
+  if (pts) pts.textContent = `Points: ${sensorHistory.length}`;
+  if (dur && sensorHistory.length > 1) {
+    const totalSec = Math.round((sensorHistory[sensorHistory.length-1].ts - sensorHistory[0].ts) / 1000);
+    dur.textContent = `Duration: ${totalSec >= 60 ? Math.floor(totalSec/60)+'m '+totalSec%60+'s' : totalSec+'s'}`;
+  }
+  if (avgT && slice.length) {
+    const mean = v => (v.reduce((a,b) => a+b, 0) / v.length).toFixed(1);
+    avgT.textContent = `Avg Temp: ${mean(slice.map(r => r.temp))}°C`;
+    if (avgS) avgS.textContent = `Avg Soil: ${mean(slice.map(r => r.soil))}%`;
+  }
+}
+// ===== END SENSOR ANALYTICS GRAPH =====
+
+// Initialize check
+checkSession();
+</script>
+</body>
+</html>
