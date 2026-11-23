@@ -42,8 +42,8 @@
 
 // ================= USER CONFIGURATION =================
 // 1. Enter your 2.4GHz Wi-Fi details (ESP32 only supports 2.4GHz)
-const char *WIFI_SSID = "YOUR_WIFI_SSID";
-const char *WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+const char *WIFI_SSID = "ravi";
+const char *WIFI_PASSWORD = "";
 
 // 2. BACKEND SERVER URL:
 //    - When ESP32 is connected to your Laptop Mobile Hotspot:
@@ -63,23 +63,27 @@ const char *DEVICE_TOKEN = "FieldSenseSecretToken2026";
 #define RAIN_PIN 35  // Rain sensor analog output (ADC1_CH7)
 #define FLAME_PIN 27 // Flame sensor digital DO output
 #define PUMP_PIN 26  // 12V Pump driver (Relay IN or MOSFET Gate)
-#define BUTTON_PIN 13 // Physical Pushbutton / Manual Switch (Internal pull-up to GND)
+#define BUTTON_PIN                                                             \
+  13 // Physical Pushbutton / Manual Switch (Internal pull-up to GND)
 
 // Wi-Fi Status LED Indicators
-#define LED_BLUE_PIN 2  // Blue LED (Also onboard ESP32 LED) -> ON when Wi-Fi connected
-#define LED_RED_PIN 19  // Red LED -> ON/Blinking when Wi-Fi disconnected / searching
+#define LED_BLUE_PIN                                                           \
+  2 // Blue LED (Also onboard ESP32 LED) -> ON when Wi-Fi connected
+#define LED_RED_PIN                                                            \
+  19 // Red LED -> ON/Blinking when Wi-Fi disconnected / searching
 
 // ================= RELAY & ACTUATOR CONFIGURATION =================
 // Set to true for standard Active-LOW relays (LOW = ON, HIGH = OFF).
-// Set to false for Active-HIGH relays or N-Channel MOSFETs (HIGH = ON, LOW = OFF).
-const bool RELAY_ACTIVE_LOW = false;
+// Set to false for Active-HIGH relays or N-Channel MOSFETs (HIGH = ON, LOW =
+// OFF).
+const bool RELAY_ACTIVE_LOW = true;
 
 #define DHT_TYPE DHT11
 DHT dht(DHT_PIN, DHT_TYPE);
 
 // ================= CALIBRATION SETTINGS =================
-const int SOIL_DRY = 3400;      // Calibrated ADC for dry air / dry soil
-const int SOIL_WET = 1350;      // Calibrated ADC for fully submerged / soaked soil
+const int SOIL_DRY = 3400; // Calibrated ADC for dry air / dry soil
+const int SOIL_WET = 1350; // Calibrated ADC for fully submerged / soaked soil
 const int RAIN_THRESHOLD = 2000; // ADC threshold for rain detection
 const bool FLAME_ACTIVE_LOW = true;
 
@@ -101,7 +105,8 @@ unsigned long lastTelemetryTime = 0;
 
 // Non-blocking Wi-Fi reconnect timer
 unsigned long lastWiFiCheckTime = 0;
-const unsigned long WIFI_RETRY_INTERVAL = 10000; // Retry every 10s if link drops
+const unsigned long WIFI_RETRY_INTERVAL =
+    10000; // Retry every 10s if link drops
 
 // Non-blocking Red LED blink timer (for offline/connecting state)
 unsigned long lastLedBlinkTime = 0;
@@ -134,7 +139,7 @@ void updateWiFiLEDs() {
     digitalWrite(LED_BLUE_PIN, HIGH); // Blue solid ON
     digitalWrite(LED_RED_PIN, LOW);   // Red OFF
   } else {
-    digitalWrite(LED_BLUE_PIN, LOW);  // Blue OFF
+    digitalWrite(LED_BLUE_PIN, LOW); // Blue OFF
     // Non-blocking blink for Red LED (every 500ms)
     unsigned long now = millis();
     if (now - lastLedBlinkTime >= 500) {
@@ -148,15 +153,18 @@ void updateWiFiLEDs() {
 // ================= SENSOR READINGS WITH NOISE FILTERING =================
 // 12-sample trimmed-mean oversampling removes Wi-Fi RF spikes
 int readAnalogSmoothed(int pin, int samples = 12) {
-  if (samples < 4) samples = 4;
+  if (samples < 4)
+    samples = 4;
   int minVal = 4096;
   int maxVal = -1;
   long sum = 0;
 
   for (int i = 0; i < samples; i++) {
     int val = analogRead(pin);
-    if (val < minVal) minVal = val;
-    if (val > maxVal) maxVal = val;
+    if (val < minVal)
+      minVal = val;
+    if (val > maxVal)
+      maxVal = val;
     sum += val;
     delayMicroseconds(120);
   }
@@ -168,9 +176,12 @@ int readAnalogSmoothed(int pin, int samples = 12) {
 
 int calculateSoilPercentage(int rawAnalog) {
   // If sensor is disconnected / floating to near zero, guard against false 100%
-  if (rawAnalog < 200) return 0;
-  if (rawAnalog >= SOIL_DRY) return 0;
-  if (rawAnalog <= SOIL_WET) return 100;
+  if (rawAnalog < 200)
+    return 0;
+  if (rawAnalog >= SOIL_DRY)
+    return 0;
+  if (rawAnalog <= SOIL_WET)
+    return 100;
 
   int pct = map(rawAnalog, SOIL_DRY, SOIL_WET, 0, 100);
   return constrain(pct, 0, 100);
@@ -213,7 +224,8 @@ bool sendTelemetry(float temp, float humidity, int soilRaw, int soilPct,
   http.addHeader("Content-Type", "application/json");
   http.addHeader("X-Device-Token", DEVICE_TOKEN);
   http.setTimeout(3000); // 3s timeout
-  http.setReuse(false);  // CRITICAL: Explicitly do NOT reuse sockets to prevent lwIP socket leaks!
+  http.setReuse(false);  // CRITICAL: Explicitly do NOT reuse sockets to prevent
+                         // lwIP socket leaks!
 
   StaticJsonDocument<384> doc;
   doc["temperature_c"] = round(temp * 10.0) / 10.0;
@@ -258,7 +270,8 @@ bool sendTelemetry(float temp, float humidity, int soilRaw, int soilPct,
     Serial.printf("[HTTP] POST failed, code: %d\n", httpCode);
   }
 
-  // CRITICAL CLEANUP: Properly end HTTP session and stop TCP clients to free lwIP sockets immediately
+  // CRITICAL CLEANUP: Properly end HTTP session and stop TCP clients to free
+  // lwIP sockets immediately
   http.end();
   if (isHttps) {
     secureClient.stop();
@@ -319,7 +332,8 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
   WiFi.persistent(true);
-  WiFi.setSleep(false); // CRITICAL: Disable modem sleep to prevent latency spikes and dropouts!
+  WiFi.setSleep(false); // CRITICAL: Disable modem sleep to prevent latency
+                        // spikes and dropouts!
 
   Serial.println("[WiFi] Starting connection to: " + String(WIFI_SSID));
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -336,7 +350,8 @@ void setup() {
     digitalWrite(LED_RED_PIN, LOW);
     Serial.println("\n[WiFi] Connected! IP: " + WiFi.localIP().toString());
   } else {
-    Serial.println("\n[WiFi] Initial link pending. Entering loop (Physical switch active offline!).");
+    Serial.println("\n[WiFi] Initial link pending. Entering loop (Physical "
+                   "switch active offline!).");
   }
 }
 
@@ -356,7 +371,7 @@ void loop() {
       buttonState = reading;
       if (buttonState == LOW) { // Button pressed (Pin shorted to GND)
         autoMode = false; // Manual button switches to MANUAL mode immediately!
-        setPumpState(!isPumpActive); // Toggle Relay ON/OFF
+        setPumpState(!isPumpActive);   // Toggle Relay ON/OFF
         sendImmediateTelemetry = true; // Push update to cloud immediately!
         Serial.printf(
             "🔘 [PHYSICAL BUTTON PRESSED] Manual Mode -> Pump is now %s\n",
@@ -386,7 +401,8 @@ void loop() {
     float temp = dht.readTemperature();
     float hum = dht.readHumidity();
 
-    if (!isnan(temp) && !isnan(hum) && temp > -20.0 && temp < 85.0 && hum >= 0.0 && hum <= 100.0) {
+    if (!isnan(temp) && !isnan(hum) && temp > -20.0 && temp < 85.0 &&
+        hum >= 0.0 && hum <= 100.0) {
       lastValidTemp = temp;
       lastValidHum = hum;
     }
@@ -399,7 +415,8 @@ void loop() {
     // A. EMERGENCY FIRE FIGHTING:
     if (isFireActive) {
       if (!isPumpActive) {
-        Serial.println("🚨 [FIRE EMERGENCY] Flame detected! Pump activated for firefighting!");
+        Serial.println("🚨 [FIRE EMERGENCY] Flame detected! Pump activated for "
+                       "firefighting!");
         setPumpState(true);
         sendImmediateTelemetry = true;
       }
@@ -408,7 +425,8 @@ void loop() {
       // Turn ON if soil is dry (< 35%) and no rain
       if (!isRaining && soilPercent < 35 && soilRaw > 200) {
         if (!isPumpActive) {
-          Serial.printf("[AUTO IRRIGATION] Soil dry (%d%%) -> Starting pump.\n", soilPercent);
+          Serial.printf("[AUTO IRRIGATION] Soil dry (%d%%) -> Starting pump.\n",
+                        soilPercent);
           setPumpState(true);
           sendImmediateTelemetry = true;
         }
@@ -416,7 +434,9 @@ void loop() {
       // Turn OFF if soil is moist (>= 70%) or rain detected
       else if (isRaining || soilPercent >= 70) {
         if (isPumpActive) {
-          Serial.printf("[AUTO IRRIGATION] Soil moist (%d%%) or rain -> Stopping pump.\n", soilPercent);
+          Serial.printf(
+              "[AUTO IRRIGATION] Soil moist (%d%%) or rain -> Stopping pump.\n",
+              soilPercent);
           setPumpState(false);
           sendImmediateTelemetry = true;
         }
@@ -441,7 +461,8 @@ void loop() {
   // -------------------------------------------------------------
   // 5. CONTINUOUS TELEMETRY TRANSMISSION (Heartbeat + Immediate Event)
   // -------------------------------------------------------------
-  bool timeForHeartbeat = (currentMillis - lastTelemetryTime >= TELEMETRY_INTERVAL);
+  bool timeForHeartbeat =
+      (currentMillis - lastTelemetryTime >= TELEMETRY_INTERVAL);
 
   if (sendImmediateTelemetry || timeForHeartbeat) {
     lastTelemetryTime = currentMillis;
@@ -451,7 +472,8 @@ void loop() {
       sendTelemetry(lastValidTemp, lastValidHum, soilRaw, soilPercent, rainRaw,
                     isRaining, isFireActive);
     } else {
-      Serial.printf("[OFFLINE] Temp: %.1fC | Hum: %.1f%% | Soil: %d%% (ADC %d) | Rain: %d | Fire: %s | Mode: %s | Pump: %s\n",
+      Serial.printf("[OFFLINE] Temp: %.1fC | Hum: %.1f%% | Soil: %d%% (ADC %d) "
+                    "| Rain: %d | Fire: %s | Mode: %s | Pump: %s\n",
                     lastValidTemp, lastValidHum, soilPercent, soilRaw, rainRaw,
                     isFireActive ? "YES" : "NO", autoMode ? "AUTO" : "MANUAL",
                     isPumpActive ? "ON" : "OFF");
